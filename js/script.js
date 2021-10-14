@@ -11,7 +11,7 @@ const searchInput = document.querySelector("nav label input");
 const searchBtn = document.querySelector("nav label button");
 
 let pageNum = 1;
-const data = []; // to catch data for thumbs
+let data = []; // to catch data for thumbs
 let searchValue = "saturn";
 
 // const data = getData(pageNum, searchInput.value || "saturn").then((res) => res);
@@ -45,27 +45,13 @@ searchBtn.addEventListener("click", function () {
   searchValue = searchInput.value;
   pageNum = 1;
   boxes.innerHTML = "";
+  data = [];
   makeTemplates();
 });
-
-// window.addEventListener("scroll", function () {
-//   if (
-//     document.documentElement.scrollTop +
-//       document.documentElement.clientHeight >=
-//     document.documentElement.scrollHeight
-//   ) {
-//     // const loaderOld = document.querySelectorAll(".loader");
-//     // loaderOld.forEach((loader) => loader.remove());
-//     pageNum = pageNum + 1;
-//     console.log("from scroll", pageNum);
-//     makeTemplates(pageNum);
-//   }
-// });
 
 // make main container full with imgs
 // add img location
 function makeTemplates() {
-  const boxImages = document.querySelectorAll(".box-image");
   // uhvati naredni page
   getData(pageNum, searchValue).then((res) => {
     data.push(...res.results);
