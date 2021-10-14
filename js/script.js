@@ -7,11 +7,89 @@ const userAvatar = document.querySelector(".avatar img");
 const twitterNode = document.querySelector(".twitter-img a");
 const instagramNode = document.querySelector(".instagram-img a");
 const unsplashNode = document.querySelector(".unsplash-img a");
+const searchInput = document.querySelector("nav label input");
+const searchBtn = document.querySelector("nav label button");
 
-const data = getData().then((res) => res);
+let pageNum = 1;
+const data = []; // to catch data for thumbs
+let searchValue = "saturn";
 
-function getData() {
-  return fetch("../data.json").then((data) => data.json());
+// const data = getData(pageNum, searchInput.value || "saturn").then((res) => res);
+
+function getData(pageNum, val) {
+  const url = `https://api.unsplash.com/search/photos?query=${val}&page=${pageNum}&per_page=12&client_id=Q06pfIFP-Jmi1rQbSttYHMQXI137l6eOwbuHirm0uCg`;
+  return fetch(url).then((data) => data.json());
+}
+
+function putElementsAfterScroll() {
+  if (
+    document.documentElement.scrollTop +
+      document.documentElement.clientHeight >=
+    document.documentElement.scrollHeight
+  ) {
+    // const loaderOld = document.querySelectorAll(".loader");
+    // loaderOld.forEach((loader) => loader.remove());
+
+    pageNum = pageNum += 1;
+    makeTemplates();
+  }
+}
+
+const returnScrollFunction = debounce(putElementsAfterScroll, 500);
+
+window.addEventListener("scroll", returnScrollFunction);
+window.addEventListener("load", function () {
+  makeTemplates();
+});
+searchBtn.addEventListener("click", function () {
+  searchValue = searchInput.value;
+  pageNum = 1;
+  boxes.innerHTML = "";
+  makeTemplates();
+});
+
+// window.addEventListener("scroll", function () {
+//   if (
+//     document.documentElement.scrollTop +
+//       document.documentElement.clientHeight >=
+//     document.documentElement.scrollHeight
+//   ) {
+//     // const loaderOld = document.querySelectorAll(".loader");
+//     // loaderOld.forEach((loader) => loader.remove());
+//     pageNum = pageNum + 1;
+//     console.log("from scroll", pageNum);
+//     makeTemplates(pageNum);
+//   }
+// });
+
+// make main container full with imgs
+// add img location
+function makeTemplates() {
+  const boxImages = document.querySelectorAll(".box-image");
+  // uhvati naredni page
+  getData(pageNum, searchValue).then((res) => {
+    data.push(...res.results);
+    for (let i = 0; i <= 11; i++) {
+      if (!res.results[i]) {
+        document.querySelector(".loader").style.display = "none";
+      }
+      makeImgBox(
+        res.results[i].urls.regular,
+        res.results[i].urls.regular,
+        res.results[i].likes,
+        res.results[i].links.html,
+        res.results[i].alt_description,
+        res.results[i].id,
+        res.results[i].user.name,
+        res.results[i].user.username,
+        res.results[i].user.profile_image.medium,
+        res.results[i].user.social.twitter_username,
+        res.results[i].user.social.instagram_username,
+        res.results[i].user.links.html
+      );
+    }
+  });
+  pageNum += 1;
 }
 
 // GALLERY
@@ -106,35 +184,6 @@ function makeImgBox(
   boxes.appendChild(box);
 }
 
-// make main container full with imgs
-// add img location
-function makeTemplates() {
-  const boxImages = document.querySelectorAll(".box-image");
-  const index = boxImages.length;
-  for (let i = index; i <= index + 11; i++) {
-    // uhvati naredni page
-    data.then((res) => {
-      if (!res.results[i]) {
-        document.querySelector(".loader").style.display = "none";
-      }
-      makeImgBox(
-        res.results[i].urls.regular,
-        res.results[i].urls.regular,
-        res.results[i].likes,
-        res.results[i].links.html,
-        res.results[i].alt_description,
-        res.results[i].id,
-        res.results[i].user.name,
-        res.results[i].user.username,
-        res.results[i].user.profile_image.medium,
-        res.results[i].user.social.twitter_username,
-        res.results[i].user.social.instagram_username,
-        res.results[i].user.links.html
-      );
-    });
-  }
-}
-
 // THUMBS
 
 function moveThumbToGallery(id) {
@@ -161,6 +210,31 @@ function moveThumbToGallery(id) {
     });
 }
 
+// make thum and put in slider thumbs
+function makeThumbs(index) {
+  console.log("thumb index", index);
+  const boxImages = document.querySelectorAll("box-image");
+  for (let i = index; i < index + 4; i++) {
+    if (i >= boxImages.length) {
+      // data su tada bili svi podaci
+      // data treba da bude svi tadasnji podaci
+      // a oni se kriju medju box image
+
+      makeThumbBox(
+        data[i - boxImages.length].urls.regular,
+        "Image Template",
+        index,
+        i,
+        data[i].id
+      );
+
+      continue;
+    }
+
+    makeThumbBox(data[i].urls.small, "Image Template", index, i, data[i].id);
+  }
+}
+
 // make thumb and put to thumb-image on lightbox
 function makeThumbBox(src, alt, index, i, id) {
   const thumb = document.createElement("div");
@@ -185,34 +259,6 @@ function makeThumbBox(src, alt, index, i, id) {
   thumb.dataset.id = id;
   thumb.appendChild(img);
   sliderThumbs.appendChild(thumb);
-}
-
-// make thum and put in slider thumbs
-function makeThumbs(index) {
-  const boxImages = document.querySelectorAll("box-image");
-  for (let i = index; i < index + 4; i++) {
-    if (i >= boxImages.length) {
-      data.then((res) => {
-        makeThumbBox(
-          res.results[i - boxImages.length].urls.regular,
-          "Image Template",
-          index,
-          i,
-          res.results[i].id
-        );
-      });
-      continue;
-    }
-    data.then((res) => {
-      makeThumbBox(
-        res.results[i].urls.small,
-        "Image Template",
-        index,
-        i,
-        res.results[i].id
-      );
-    });
-  }
 }
 
 function putElementsAfterScroll() {
@@ -246,8 +292,6 @@ function debounce(func, wait, immediate) {
     }
   };
 }
-
-const returnScrollFunction = debounce(putElementsAfterScroll, 500);
 
 const sliderImg = document.querySelector(".slider-img img");
 
@@ -317,14 +361,6 @@ btnList.addEventListener("click", function () {
   btnGrid.classList.remove("active");
   this.classList.add("active");
 });
-
-window.addEventListener("load", function () {
-  makeTemplates();
-
-  data.then((res) => console.log(res));
-});
-
-window.addEventListener("scroll", returnScrollFunction);
 
 document.querySelector("body").addEventListener("click", function (e) {
   if (

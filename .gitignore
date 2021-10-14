@@ -1,0 +1,7 @@
+*.md
+/Screenshots
+/images/fulls
+/images/thumbs
+js/scroll-testing.js
+data.json
+.gitignore
