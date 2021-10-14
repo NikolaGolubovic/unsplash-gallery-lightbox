@@ -32,8 +32,9 @@ body.lightbox-open {
     }
     nav {
         display: flex;
-        justify-content: center;
+        justify-content: flex-end;
         position: relative;
+        width: 99%;
     }
     nav label {
         width: 450px;
@@ -340,9 +341,6 @@ body.lightbox-open {
     .slider-desc {
         width: 100%;
         margin-top: 40px;
-    }
-    nav {
-        justify-content: flex-end;
     }
     .view-controller {
         display: flex;
